@@ -87,8 +87,6 @@ blueprint:
       selector:
         time: {}
 variables:
-    my_thermostat: !input 'thermostat'
-    my_thermostat_temp: "{{ expand(my_thermostat)[0].temperature }}"
     my_min_temp: !input 'min_temp'
     my_day_temp_heat: !input 'day_temp_heat'
     my_night_temp_heat: !input 'night_temp_heat'
@@ -131,9 +129,10 @@ action:
           below: !input 'day_temp_heat'
         - condition: not
           conditions:
-            - condition: template
-              value_template: "{{ my_thermostat_temp == 20 }}"
-#              value_template: "{{ my_thermostat_temp == my_day_temp_heat }}"              
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input day_temp_heat
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -164,8 +163,10 @@ action:
           below: !input 'night_temp_heat'
         - condition: not
           conditions:
-            - condition: template
-              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input night_temp_heat
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -213,8 +214,10 @@ action:
           state: "off"
         - condition: not
           conditions:
-            - condition: template
-              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input night_temp_heat
         sequence:
           - service: climate.turn_on
             data: {}
