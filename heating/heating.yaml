@@ -131,7 +131,7 @@ action:
         - condition: not
           conditions:
             - condition: template
-              value_template: "{{ state_attr([my_thermostat],'temperature') == [my_day_temp_heat] }}"
+              value_template: "{{ state_attr(expand(my_thermostat),'temperature') == expand(my_day_temp_heat) }}"
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
