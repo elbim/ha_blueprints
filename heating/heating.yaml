@@ -132,7 +132,7 @@ action:
         - condition: not
           conditions:
             - condition: template
-              value_template: "{{ my_thermostat_temp }}"
+              value_template: "{{ states[my_thermostat].temperature == 20 }}"
 #              value_template: "{{ my_thermostat_temp == my_day_temp_heat }}"              
             - condition: state
               entity_id: !input 'groupname'
