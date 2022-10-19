@@ -1,0 +1,227 @@
+blueprint:
+  name: Heizungsautomatik
+  description: Automatische Heizungssteuerung unter Berücksichtigung von Innen-/Außentemperatur, Fensteröffnung, Tages-/Nachtzeit und Anwesenheit von Personen
+  source_url: https://gist.github.com/elbim/edf581db0214dfd98d47886cf197746b/heating.yaml
+  domain: automation
+  input:
+    thermostat:
+      name: Thermostat
+      description: Der zu verwendende Thermostat
+      selector:
+        entity:
+          domain: climate
+    window_sensor:
+      name: Fenstersensor
+      description: Sensor zur Überwachung ob das Fenster offen oder geschlossen ist. Kann auch eine Gruppe von Fenstern sein.
+      selector:
+        entity:
+          domain: binary_sensor
+    in_temp_sensor:
+      name: Raumtemperatursensor
+      description: Sensor zur Überwachung der Raumtemperatur
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    out_temp_sensor:
+      name: Außentemperatursensor
+      description: Sensor zur Überwachung der Außentemperatur (z.B. OpenWeather)
+      default: sensor.openweathermap_temperature
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    groupname:
+      name: Personengruppe
+      description: Personengruppe für den Anwesenheitssensor
+      default: []
+      selector:
+        entity:
+          domain: group
+    heizung:
+      name: Schalter Heizung
+      description: Boolean Schalter zur Aktivierung der Heizungssteuerung (muss gfs. separat als Helfer angelegt werden). Steuerung greift nur, wenn Schalter on ist.
+      selector:
+        entity:
+          domain: input_boolean
+    min_temp:
+      name: Minimale Außentemperatur
+      description: Ist die Außentemperatur höher als dieser Wert, wird die Heizung ausgeschaltet
+      default: 15
+      selector:
+        number:
+          min: 10.0
+          max: 20.0
+          step: 0.5
+          mode: slider
+    day_temp_heat:
+      name: Tagestemperatur
+      description: Wie warm soll es tagsüber im Haus sein, wenn jemand anwesend ist?
+      default: 20
+      selector:
+        number:
+          min: 5.0
+          max: 30.0
+          step: 0.5
+          mode: slider
+    night_temp_heat:
+      name: Nachttemperatur
+      description: Wie warm soll es nachts sein oder wenn niemand anwesend ist?
+      default: 17
+      selector:
+        number:
+          min: 5.0
+          max: 30.0
+          step: 0.5
+          mode: slider
+    time_start:
+      name: Beginn der Heizens
+      description: Wann soll die Heizung morgens eingeschaltet werden?
+      default: '06:00:00'
+      selector:
+        time: {}
+    time_sleep:
+      name: Ende des Heizenz
+      description: Wann schalten wir abends die Heizung aus?
+      default: '21:30:00'
+      selector:
+        time: {}
+variables:
+    my_thermostat: !input 'thermostat'
+    my_min_temp: !input 'min_temp'
+    my_day_temp_heat: !input 'day_temp_heat'
+    my_night_temp_heat: !input 'night_temp_heat'
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: event
+    event_type: automation.reload
+  - platform: time
+    at: !input 'time_start'
+  - platform: time
+    at: !input 'time_sleep'
+  - platform: state
+    entity_id: !input 'groupname'
+  - platform: state
+    entity_id: !input 'in_temp_sensor'
+  - platform: state
+    entity_id:  !input 'out_temp_sensor'
+  - platform: state
+    entity_id: !input 'window_sensor'
+condition:
+  - condition: state
+    entity_id: !input heizung
+    state: 'on'
+action:
+  - choose:
+      # Option 1 - Tagsüber
+      - conditions:
+        - condition: numeric_state
+          entity_id: !input 'out_temp_sensor'
+          below: !input 'min_temp'
+        - condition: time
+          after: !input 'time_start'
+          before: !input 'time_sleep'
+        - condition: state
+          entity_id: !input 'window_sensor'
+          state: "off"
+        - condition: numeric_state
+          entity_id: !input 'in_temp_sensor'
+          below: !input 'day_temp_heat'
+        - condition: not
+          conditions:
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_day_temp_heat }}"
+            - condition: state
+              entity_id: !input 'groupname'
+              state: not_home
+        sequence:
+          - service: climate.turn_on
+            data: {}
+            target:
+              entity_id: !input 'thermostat'
+          - service: climate.set_temperature
+            data:
+              temperature: !input 'day_temp_heat'
+              hvac_mode: heat
+            target:
+              entity_id: !input 'thermostat'
+      # Option 2 - Nachts
+      - conditions:
+        - condition: numeric_state
+          entity_id: !input 'out_temp_sensor'
+          below: !input 'min_temp'
+        - condition: time
+          after: !input 'time_sleep'
+          before: !input 'time_start'
+        - condition: state
+          entity_id: !input 'window_sensor'
+          state: "off"
+        - condition: numeric_state
+          entity_id: !input 'in_temp_sensor'
+          below: !input 'night_temp_heat'
+        - condition: not
+          conditions:
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+            - condition: state
+              entity_id: !input 'groupname'
+              state: not_home
+        sequence:
+          - service: climate.turn_on
+            data: {}
+            target:
+              entity_id: !input 'thermostat'
+          - service: climate.set_temperature
+            data:
+              temperature: !input 'night_temp_heat'
+              hvac_mode: heat
+            target:
+              entity_id: !input 'thermostat'
+      # Option 3 - Fenster wird geöffnet
+      - conditions:
+        - condition: state
+          entity_id: !input 'window_sensor'
+          state: "on"
+        - condition: and
+          conditions:
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: !input 'thermostat'
+                  state: "off"
+        sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              entity_id: !input 'thermostat'
+      # Option 4 - Away
+      - conditions:
+        - condition: numeric_state
+          entity_id: !input 'out_temp_sensor'
+          below: !input 'min_temp'
+        - condition: numeric_state
+          entity_id: !input 'in_temp_sensor'
+          below: !input 'night_temp_heat'
+        - condition: state
+          entity_id: !input 'groupname'
+          state: not_home
+        - condition: state
+          entity_id: !input 'window_sensor'
+          state: "off"
+        - condition: not
+          conditions:
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+        sequence:
+          - service: climate.turn_on
+            data: {}
+            target:
+              entity_id: !input 'thermostat'
+          - service: climate.set_temperature
+            data:
+              temperature: !input 'night_temp_heat'
+              hvac_mode: heat
+            target:
+              entity_id: !input 'thermostat'
+mode: queued
