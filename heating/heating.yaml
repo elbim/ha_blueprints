@@ -130,8 +130,8 @@ action:
           below: !input 'day_temp_heat'
         - condition: not
           conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_day_temp_heat }}"
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_day_temp_heat }}"
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -162,8 +162,8 @@ action:
           below: !input 'night_temp_heat'
         - condition: not
           conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -209,10 +209,10 @@ action:
         - condition: state
           entity_id: !input 'window_sensor'
           state: "off"
-#        - condition: not
-#          conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+        - condition: not
+          conditions:
+            - condition: template
+              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
         sequence:
           - service: climate.turn_on
             data: {}
