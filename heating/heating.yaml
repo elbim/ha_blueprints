@@ -132,7 +132,11 @@ action:
         - condition: not
           conditions:
             - condition: template
+<<<<<<< HEAD
               value_template: "{{ my_thermostat_temp == my_day_temp_heat }}"
+=======
+              value_template: "{{ state_attr(expand(my_thermostat),'temperature') == expand(my_day_temp_heat) }}"
+>>>>>>> unstable
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
