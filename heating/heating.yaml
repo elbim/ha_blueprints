@@ -1,7 +1,7 @@
 blueprint:
   name: Heizungsautomatik
   description: Automatische Heizungssteuerung unter Berücksichtigung von Innen-/Außentemperatur, Fensteröffnung, Tages-/Nachtzeit und Anwesenheit von Personen
-  source_url: https://github.com/elbim/ha_blueprints/blob/main/heating/
+  source_url: https://github.com/elbim/ha_blueprints/blob/unstable/heating/
   domain: automation
   input:
     thermostat:
@@ -87,7 +87,6 @@ blueprint:
       selector:
         time: {}
 variables:
-    my_thermostat: !input 'thermostat'
     my_min_temp: !input 'min_temp'
     my_day_temp_heat: !input 'day_temp_heat'
     my_night_temp_heat: !input 'night_temp_heat'
@@ -130,8 +129,10 @@ action:
           below: !input 'day_temp_heat'
         - condition: not
           conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_day_temp_heat }}"
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input day_temp_heat
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -162,8 +163,10 @@ action:
           below: !input 'night_temp_heat'
         - condition: not
           conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input night_temp_heat
             - condition: state
               entity_id: !input 'groupname'
               state: not_home
@@ -209,10 +212,12 @@ action:
         - condition: state
           entity_id: !input 'window_sensor'
           state: "off"
-#        - condition: not
-#          conditions:
-#            - condition: template
-#              value_template: "{{ state_attr(my_thermostat,'temperature') == my_night_temp_heat }}"
+        - condition: not
+          conditions:
+            - condition: state
+              entity_id: !input thermostat
+              attribute: temperature
+              state: !input night_temp_heat
         sequence:
           - service: climate.turn_on
             data: {}
