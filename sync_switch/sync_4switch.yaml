@@ -2,6 +2,7 @@ blueprint:
   name: Sync 4 switches
   description: Turn on a switch when other one is turend on and vice versa
   domain: automation
+  source_url: https://github.com/elbim/ha_blueprints/tree/main/sync_switch
   input:
     switch_entity1:
       name: Switch 1
