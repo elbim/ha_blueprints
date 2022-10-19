@@ -1,7 +1,7 @@
 blueprint:
   name: Heizungsautomatik
   description: Automatische Heizungssteuerung unter Berücksichtigung von Innen-/Außentemperatur, Fensteröffnung, Tages-/Nachtzeit und Anwesenheit von Personen
-  source_url: https://gist.github.com/elbim/edf581db0214dfd98d47886cf197746b/heating.yaml
+  source_url: https://github.com/elbim/ha_blueprints/blob/main/heating/
   domain: automation
   input:
     thermostat:
