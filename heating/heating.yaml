@@ -88,7 +88,7 @@ blueprint:
         time: {}
 variables:
     my_thermostat: !input 'thermostat'
-    my_thermostat_temp: "{{ state_attr(my_thermostat, 'temperature') }}"
+    my_thermostat_temp: "{{ expand(my_thermostat)[0].temperature }}"
     my_min_temp: !input 'min_temp'
     my_day_temp_heat: !input 'day_temp_heat'
     my_night_temp_heat: !input 'night_temp_heat'
@@ -132,7 +132,7 @@ action:
         - condition: not
           conditions:
             - condition: template
-              value_template: "{{ states[my_thermostat].temperature == 20 }}"
+              value_template: "{{ my_thermostat_temp == 20 }}"
 #              value_template: "{{ my_thermostat_temp == my_day_temp_heat }}"              
             - condition: state
               entity_id: !input 'groupname'
