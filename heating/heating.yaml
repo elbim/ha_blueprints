@@ -11,7 +11,7 @@ blueprint:
       selector:
         entity:
           domain: climate
-          multiple: false
+          multiple: true
     window_sensor:
       name: Fenstersensor
       description: Sensor zur Überwachung ob das Fenster offen oder geschlossen ist.
