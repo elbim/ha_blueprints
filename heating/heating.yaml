@@ -7,7 +7,7 @@ blueprint:
   input:
     thermostat:
       name: Thermostat
-      description: Der zu verwendende Thermostat
+      description: Verwendendete Thermostate (Mehrfachauswahl möglich)
       selector:
         entity:
           domain: climate
