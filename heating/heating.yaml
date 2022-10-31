@@ -118,6 +118,10 @@ trigger:
   entity_id: !input out_temp_sensor
 - platform: state
   entity_id: !input window_sensor
+  for:
+    hours: 0
+    minutes: 0
+    seconds: 10
 condition:
 - condition: state
   entity_id: !input heizung
@@ -158,6 +162,11 @@ action:
         hvac_mode: heat
       target:
         entity_id: !input thermostat
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
   # Option 2 - Nachtzeit
   - conditions:
     - condition: numeric_state
@@ -192,6 +201,11 @@ action:
         hvac_mode: heat
       target:
         entity_id: !input thermostat
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
   # Option 3 - Fenster auf/zu
   - conditions:
     - condition: state
@@ -209,6 +223,11 @@ action:
       data: {}
       target:
         entity_id: !input thermostat
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
   # Option 4 - Abwesenheit
   - conditions:
     - condition: numeric_state
@@ -240,6 +259,11 @@ action:
         hvac_mode: heat
       target:
         entity_id: !input thermostat
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
   # Option 5 - Heizung aus wenn es warm genug ist
   - conditions:
     - condition: numeric_state
@@ -257,4 +281,9 @@ action:
       data: {}
       target:
         entity_id: !input thermostat
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 10
+        milliseconds: 0
 mode: queued
